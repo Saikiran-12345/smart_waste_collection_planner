@@ -1,0 +1,54 @@
+.vehicle-management-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.vehicle-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.vehicle-table th, .vehicle-table td {
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  font-size: 0.875rem;
+}
+
+.vehicle-table th {
+  background-color: var(--table-header-bg, #f9fafb);
+  color: var(--text-muted, #4b5563);
+  font-weight: 600;
+}
+
+.capacity-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-width: 240px;
+}
+
+.capacity-bar-bg {
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.capacity-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.capacity-bar-text {
+  font-size: 0.75rem;
+  color: var(--text-muted, #4b5563);
+}
+
+.badge-maintenance {
+  background-color: #fef3c7;
+  color: #d97706;
+}

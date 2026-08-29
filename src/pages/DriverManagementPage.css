@@ -1,0 +1,38 @@
+.driver-management-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.driver-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.driver-table th, .driver-table td {
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  font-size: 0.875rem;
+}
+
+.driver-table th {
+  background-color: var(--table-header-bg, #f9fafb);
+  color: var(--text-muted, #4b5563);
+  font-weight: 600;
+}
+
+.badge-available {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.badge-assigned {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-offduty {
+  background-color: #f3f4f6;
+  color: #374151;
+}
