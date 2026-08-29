@@ -1,0 +1,14 @@
+{
+  "coefficients": {
+    "population_weight": 0.15,
+    "growth_factor": 1.02,
+    "intercept": 50.0,
+    "area_factors": {
+      "AREA001": 1.2,
+      "AREA002": 0.8,
+      "AREA003": 1.5,
+      "AREA004": 1.0,
+      "AREA005": 0.9
+    }
+  }
+}

@@ -1,0 +1,36 @@
+graph TD
+    subgraph UI_Layer [React UI Layer]
+        A[App.tsx Router] --> B[LoginPage.tsx]
+        A --> C[Dashboard.tsx]
+        A --> D[AreaManagementPage.tsx]
+        A --> E[VehicleManagementPage.tsx]
+        A --> F[DriverManagementPage.tsx]
+        A --> G[RoutePlannerPage.tsx]
+        A --> H[AnalyticsPage.tsx]
+        A --> I[ReportPage.tsx]
+        A --> J[SchedulePage.tsx]
+        A --> K[DataManagementPage.tsx]
+    end
+
+    subgraph Service_Layer [Business Service Layer]
+        C & H --> SL_Analytics[analyticsService.ts]
+        D --> SL_Area[areaService.ts]
+        E --> SL_Vehicle[vehicleService.ts]
+        F --> SL_Driver[driverService.ts]
+        G --> SL_Route[routeService.ts]
+        H --> SL_ML[mlService.ts]
+        I --> SL_Report[reportService.ts]
+        J --> SL_Schedule[scheduleService.ts]
+        K --> SL_Persistence[persistenceService.ts]
+    end
+
+    subgraph Data_Layer [Data & Storage Layer]
+        SL_Area & SL_Vehicle & SL_Driver & SL_Route & SL_ML & SL_Schedule & SL_Persistence --> Repo[repository.ts]
+        Repo --> LocalStorage[localStorage]
+        SL_ML --> MLModel[model.json]
+    end
+
+    subgraph Utilities [Utility Helpers]
+        SL_Route & SL_Vehicle --> DistHelper[distanceHelper.ts]
+        SL_Persistence --> LSHelper[localStorageHelper.ts]
+    end
