@@ -38,3 +38,5 @@ export const mlService = {
     };
   },
 };
+
+// Forecast estimation uses linear regression coefficients.
