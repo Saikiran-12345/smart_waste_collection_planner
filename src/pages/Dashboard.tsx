@@ -136,3 +136,5 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
+// Dashboard component renders key charts and operational metrics.
