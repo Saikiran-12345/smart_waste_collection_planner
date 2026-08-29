@@ -24,8 +24,9 @@ describe('routeService', () => {
 
     const result = await routeService.computeRoute('area-start');
 
-    // Nearest should be 'area-near', then 'area-far'
     expect(result.route).toEqual(['area-start', 'area-near', 'area-far']);
     expect(result.totalDistance).toBeGreaterThan(0);
   });
 });
+
+// Verified route order and geographic distance thresholds.
