@@ -3,12 +3,14 @@ import { User } from '@/types/User';
 
 interface AuthContextProps {
   user: User | null;
+  isLoading: boolean;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextProps>({
   user: null,
+  isLoading: true,
   login: async () => false,
   logout: () => {}
 });
@@ -20,15 +22,24 @@ const demoUsers: Record<string, { password: string; role: User['role'] }> = {
   driver: { password: 'driver123', role: 'DRIVER' }
 };
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-
-  // restore session from localStorage
-  useEffect(() => {
+// Read stored user synchronously to avoid flash-redirect on page reload
+function getStoredUser(): User | null {
+  try {
     const stored = localStorage.getItem('authUser');
-    if (stored) {
-      setUser(JSON.parse(stored) as User);
-    }
+    if (stored) return JSON.parse(stored) as User;
+  } catch {
+    // corrupted data – ignore
+  }
+  return null;
+}
+
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(getStoredUser);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Mark loading complete after first render
+  useEffect(() => {
+    setIsLoading(false);
   }, []);
 
   const login = async (username: string, password: string): Promise<boolean> => {
@@ -48,7 +59,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
