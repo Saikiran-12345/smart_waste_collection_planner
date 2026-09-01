@@ -1,4 +1,3 @@
-import type { Notification } from '../types/Notification';
 import { create, readAll, readOne, update, remove } from '../repository/repository';
 
 export type NotificationPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
@@ -33,8 +32,8 @@ export interface NotificationEvent {
   metadata: Record<string, string>;
 }
 
-const NOTIFICATION_RULE_TYPE = 'NotificationRule';
-const NOTIFICATION_EVENT_TYPE = 'NotificationEvent';
+const RULE_TYPE = 'NotificationRule';
+const EVENT_TYPE = 'NotificationEvent';
 
 /**
  * NotificationService manages alert rules, dispatching, and event tracking
@@ -49,37 +48,30 @@ export const notificationService = {
       id: `rule-${Date.now()}`,
       createdDate: new Date().toISOString().split('T')[0],
     };
-    create(NOTIFICATION_RULE_TYPE, newRule.id, newRule);
+    create(RULE_TYPE, newRule);
     return newRule;
   },
 
   async getAllRules(): Promise<NotificationRule[]> {
-    const all = readAll(NOTIFICATION_RULE_TYPE) as Record<string, NotificationRule>;
-    return Object.values(all);
+    return readAll<NotificationRule>(RULE_TYPE);
   },
 
-  async getRuleById(id: string): Promise<NotificationRule | null> {
-    return (readOne(NOTIFICATION_RULE_TYPE, id) as NotificationRule) || null;
+  async getRuleById(id: string): Promise<NotificationRule | undefined> {
+    return readOne<NotificationRule>(RULE_TYPE, id);
   },
 
   async updateRule(id: string, updates: Partial<NotificationRule>): Promise<NotificationRule> {
-    const existing = readOne(NOTIFICATION_RULE_TYPE, id) as NotificationRule;
-    if (!existing) throw new Error(`Notification rule not found: ${id}`);
-    const updated = { ...existing, ...updates };
-    update(NOTIFICATION_RULE_TYPE, id, updated);
-    return updated;
+    return update<NotificationRule & { id: string }>(RULE_TYPE, id, updates);
   },
 
   async toggleRule(id: string): Promise<NotificationRule> {
-    const existing = readOne(NOTIFICATION_RULE_TYPE, id) as NotificationRule;
+    const existing = readOne<NotificationRule>(RULE_TYPE, id);
     if (!existing) throw new Error(`Notification rule not found: ${id}`);
-    existing.isActive = !existing.isActive;
-    update(NOTIFICATION_RULE_TYPE, id, existing);
-    return existing;
+    return update<NotificationRule & { id: string }>(RULE_TYPE, id, { isActive: !existing.isActive });
   },
 
   async deleteRule(id: string): Promise<void> {
-    remove(NOTIFICATION_RULE_TYPE, id);
+    remove(RULE_TYPE, id);
   },
 
   // ── Event Dispatching ────────────────────────────────────────────
@@ -90,12 +82,12 @@ export const notificationService = {
     message: string,
     metadata: Record<string, string> = {}
   ): Promise<NotificationEvent | null> {
-    const rule = readOne(NOTIFICATION_RULE_TYPE, ruleId) as NotificationRule;
+    const rule = readOne<NotificationRule>(RULE_TYPE, ruleId);
     if (!rule || !rule.isActive) return null;
 
     // Check cooldown: find the most recent event for this rule
-    const allEvents = readAll(NOTIFICATION_EVENT_TYPE) as Record<string, NotificationEvent>;
-    const ruleEvents = Object.values(allEvents)
+    const allEvents = readAll<NotificationEvent>(EVENT_TYPE);
+    const ruleEvents = allEvents
       .filter(e => e.ruleId === ruleId)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -116,26 +108,21 @@ export const notificationService = {
       priority: rule.priority,
       channels: rule.channels,
       recipients: rule.recipientRoles,
-      status: 'PENDING',
+      status: 'SENT',
       createdAt: new Date().toISOString(),
+      sentAt: new Date().toISOString(),
       metadata,
     };
 
-    create(NOTIFICATION_EVENT_TYPE, event.id, event);
-
-    // Simulate sending (in a real app this would call external APIs)
-    event.status = 'SENT';
-    event.sentAt = new Date().toISOString();
-    update(NOTIFICATION_EVENT_TYPE, event.id, event);
-
+    create(EVENT_TYPE, event);
     return event;
   },
 
   // ── Event Queries ────────────────────────────────────────────────
 
   async getAllEvents(): Promise<NotificationEvent[]> {
-    const all = readAll(NOTIFICATION_EVENT_TYPE) as Record<string, NotificationEvent>;
-    return Object.values(all).sort(
+    const all = readAll<NotificationEvent>(EVENT_TYPE);
+    return all.sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
   },
@@ -151,28 +138,27 @@ export const notificationService = {
   },
 
   async markAsRead(eventId: string): Promise<NotificationEvent> {
-    const event = readOne(NOTIFICATION_EVENT_TYPE, eventId) as NotificationEvent;
-    if (!event) throw new Error(`Notification event not found: ${eventId}`);
-    event.status = 'READ';
-    event.readAt = new Date().toISOString();
-    update(NOTIFICATION_EVENT_TYPE, eventId, event);
-    return event;
+    return update<NotificationEvent & { id: string }>(EVENT_TYPE, eventId, {
+      status: 'READ',
+      readAt: new Date().toISOString(),
+    });
   },
 
   async markAllAsRead(): Promise<number> {
     const unread = await this.getUnreadEvents();
     let count = 0;
     for (const event of unread) {
-      event.status = 'READ';
-      event.readAt = new Date().toISOString();
-      update(NOTIFICATION_EVENT_TYPE, event.id, event);
+      update<NotificationEvent & { id: string }>(EVENT_TYPE, event.id, {
+        status: 'READ',
+        readAt: new Date().toISOString(),
+      });
       count++;
     }
     return count;
   },
 
   async deleteEvent(eventId: string): Promise<void> {
-    remove(NOTIFICATION_EVENT_TYPE, eventId);
+    remove(EVENT_TYPE, eventId);
   },
 
   // ── Analytics ────────────────────────────────────────────────────
